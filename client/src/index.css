@@ -139,3 +139,12 @@
   text-decoration: none !important;
   color: black !important;
 }
+
+/* card-btn */
+
+.card-btn {
+  height: 35px;
+  width: 120px;
+  margin-right: 4px;
+  font-size: 0.8rem;
+}

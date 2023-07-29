@@ -161,7 +161,6 @@ export const updateProductController = async (req, res) => {
         return res.status(500).send({ error: "Category is required" });
       case !shipping:
         return res.status(500).send({ error: "shipping is required" });
-
       case !quantity:
         return res.status(500).send({ error: "Quantity is required" });
 
@@ -190,6 +189,78 @@ export const updateProductController = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in updating product",
+      error: error.message,
+    });
+  }
+};
+
+//productFilterController:
+
+export const productFilterController = async (req, res) => {
+  try {
+    const { checked, radio } = req.body;
+    let args = {};
+    if (checked.length > 0) args.category = checked;
+    if (radio.length) args.price = { $gte: radio[0], $lte: radio[1] };
+
+    const products = await productModel.find(args);
+    res.status(201).send({
+      success: true,
+      message: "product found successfully",
+      products,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      success: false,
+      message: "Error in filtering product",
+      error: error.message,
+    });
+  }
+};
+
+//productCountController:
+
+export const productCountController = async (req, res) => {
+  try {
+    const total = await productModel.find({}).estimatedDocumentCount();
+    res.status(200).send({
+      success: true,
+      total,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      success: false,
+      message: "Error in  product count",
+      error: error.message,
+    });
+  }
+};
+
+//productListController bage on page:
+
+export const productListController = async (req, res) => {
+  try {
+    const perPage = 6;
+    const page = req.params.page ? req.params.page : 1;
+
+    const products = await productModel
+      .find({})
+      .select("-photo")
+      .skip((page - 1) * perPage)
+      .limit(perPage)
+      .sort({ createdAt: -1 });
+
+    res.status(200).send({
+      success: true,
+      products,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      success: false,
+      message: "Error in  product list per page controller",
       error: error.message,
     });
   }
