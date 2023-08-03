@@ -2,10 +2,13 @@ import React, { useEffect, useState } from "react";
 import Layout from "../components/Layout/Layout";
 import { toast } from "react-hot-toast";
 import axios from "axios";
-import { App, Checkbox, Radio } from "antd";
+import { Checkbox, Button, Drawer, Radio, Space } from "antd";
 import { prices } from "../components/Price";
+import { useNavigate } from "react-router-dom";
+import { useCart } from "../context/cart";
 
 const HomePage = () => {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [checked, setChacked] = useState([]);
@@ -13,6 +16,20 @@ const HomePage = () => {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [cart, setCart] = useCart();
+
+  //antd:
+  const [open, setOpen] = useState(false);
+  const [placement, setPlacement] = useState("left");
+  const showDrawer = () => {
+    setOpen(true);
+  };
+  const onClose = () => {
+    setOpen(false);
+  };
+  const onChange = (e) => {
+    setPlacement(e.target.value);
+  };
 
   //loadmore:
   const loadMore = async () => {
@@ -129,8 +146,55 @@ const HomePage = () => {
   return (
     <Layout title={"All Products - Best Offer"}>
       <div className="container-fluid m-3 p-3">
+        <Button type="primary cat-btn" onClick={showDrawer}>
+          FILTER
+        </Button>
+
         <div className="row">
-          <div className="col-md-2 mt-3">
+          <div className="advirtisement "></div>
+          <div className="col-md-2 mt-3 mobile">
+            <Drawer
+              title="Filter Product"
+              placement={placement}
+              closable={false}
+              onClose={onClose}
+              open={open}
+              key={placement}
+              width={190}
+            >
+              <h6 className="text-center">Filters By Category</h6>
+              <div className="d-flex flex-column">
+                {categories?.map((c) => (
+                  <Checkbox
+                    key={c._id}
+                    onChange={(e) => handlefilter(e.target.checked, c._id)}
+                  >
+                    {c.name}
+                  </Checkbox>
+                ))}
+              </div>
+
+              <h6 className="text-center">Filters By Price</h6>
+              <div className="d-flex flex-column">
+                <Radio.Group onChange={(e) => setRadio(e.target.value)}>
+                  {prices?.map((p) => (
+                    <div key={p._id}>
+                      <Radio value={p.array}>{p.name}</Radio>
+                    </div>
+                  ))}
+                </Radio.Group>
+              </div>
+
+              <div className="d-flex flex-column">
+                <button
+                  className="btn btn-danger"
+                  onClick={() => window.location.reload()}
+                >
+                  RESET FILTERS
+                </button>
+              </div>
+            </Drawer>
+
             <h6 className="text-center">Filters By Category</h6>
             <div className="d-flex flex-column">
               {categories?.map((c) => (
@@ -186,10 +250,24 @@ const HomePage = () => {
                     <h6 className="card-text">$ {p.price}</h6>
 
                     <div className="d-flex">
-                      <button className="btn btn-primary card-btn">
+                      <button
+                        className="btn btn-primary card-btn"
+                        onClick={() => navigate(`/product/${p._id}`)}
+                      >
                         More Details
                       </button>
-                      <button className="btn btn-secondary card-btn">
+                      <button
+                        className="btn btn-secondary card-btn"
+                        onClick={() => {
+                          setCart([...cart, p]);
+                          localStorage.setItem(
+                            "cart",
+                            JSON.stringify([...cart, p])
+                          );
+
+                          toast.success("Item added to cart");
+                        }}
+                      >
                         Add To Cart
                       </button>
                     </div>

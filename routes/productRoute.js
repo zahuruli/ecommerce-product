@@ -3,14 +3,19 @@ import formidable from "express-formidable";
 
 import { isAdmin, requireSignin } from "../middlewers/authMiddlewear.js";
 import {
+  braintreePaymentController,
+  braintreeTokenController,
   createProductController,
   deleteProductController,
   getProductController,
   getSingleProductController,
+  productCategoryController,
   productCountController,
   productFilterController,
   productListController,
   productPhotoController,
+  serchProductController,
+  similarProductCotroller,
   updateProductController,
 } from "../controllers/productController.js";
 
@@ -60,5 +65,21 @@ router.get("/product-count", productCountController);
 
 //product per page:
 router.get("/product-list/:page", productListController);
+
+//serach product:
+router.get("/search/:keyword", serchProductController);
+
+//similar product:
+router.get("/similar-product/:pid/:cid", similarProductCotroller);
+
+//get product by category  id:
+router.get("/product-category/:cid", productCategoryController);
+
+//payment route:
+//token:
+router.get("/braintree/token", braintreeTokenController);
+
+//payment:
+router.post("/braintree/payment", requireSignin, braintreePaymentController);
 
 export default router;

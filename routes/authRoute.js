@@ -1,9 +1,13 @@
 import express from "express";
 import {
   forgotPasswordController,
+  getAdminOrdersController,
+  getOrdersController,
   loginController,
+  orderStatusController,
   registerControler,
   testController,
+  updateProfileController,
 } from "../controllers/AuthController.js";
 import { isAdmin, requireSignin } from "../middlewers/authMiddlewear.js";
 
@@ -32,5 +36,23 @@ router.get("/user-auth", requireSignin, (req, res) => {
 router.get("/admin-auth", requireSignin, isAdmin, (req, res) => {
   res.status(200).send({ ok: true });
 });
+
+//update profile:
+router.put("/profile", requireSignin, updateProfileController);
+
+//orders:
+router.get("/orders", requireSignin, getOrdersController);
+
+//orders:
+router.get("/all-orders", requireSignin, isAdmin, getAdminOrdersController);
+
+//update order status:
+
+router.put(
+  "/order-status/:orderId",
+  requireSignin,
+  isAdmin,
+  orderStatusController
+);
 
 export default router;

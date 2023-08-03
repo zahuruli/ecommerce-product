@@ -19,12 +19,23 @@ import Profile from "./pages/user/Profile";
 import Orders from "./pages/user/Orders";
 import Products from "./pages/Admin/Products";
 import UpdateProduct from "./pages/Admin/updateProduct";
+import SearchProduct from "./pages/SearchProduct";
+import ProductDetailes from "./pages/ProductDetailes";
+import Categories from "./pages/Categories";
+import SingleCategory from "./pages/SingleCategory";
+import CartPage from "./pages/CartPage";
+import AdminOrders from "./pages/Admin/AdminOrders";
 
 function App() {
   return (
     <>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/search" element={<SearchProduct />} />
+        <Route path="/product/:id" element={<ProductDetailes />} />
+        <Route path="/categories" element={<Categories />} />
+        <Route path="/category/:cid" element={<SingleCategory />} />
+        <Route path="/cart" element={<CartPage />} />
 
         {/* ==============user dashboard============= */}
         <Route path="/dashboard" element={<PrivateRoute />}>
@@ -40,6 +51,7 @@ function App() {
           <Route path="admin/users" element={<Users />} />
           <Route path="admin/products" element={<Products />} />
           <Route path="admin/product/:id" element={<UpdateProduct />} />
+          <Route path="admin/orders" element={<AdminOrders />} />
         </Route>
 
         {/* ==============Auth Routing ============= */}

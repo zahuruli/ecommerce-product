@@ -140,11 +140,33 @@
   color: black !important;
 }
 
-/* card-btn */
-
+/*===================== card-btn ======================*/
 .card-btn {
   height: 35px;
   width: 120px;
   margin-right: 4px;
   font-size: 0.8rem;
+}
+@media screen and (max-width: 768px) {
+  .mobile {
+    display: none;
+    visibility: hidden;
+  }
+  .cat-btn {
+    display: visible;
+    position: fixed;
+    top: 150px;
+    left: -15px;
+  }
+}
+@media screen and (min-width: 768px) {
+  .cat-btn {
+    display: none;
+  }
+}
+
+.drawer {
+  width: 50px;
+}
+.advirtisement {
 }

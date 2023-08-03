@@ -1,7 +1,23 @@
 import slugify from "slugify";
 import productModel from "../models/productModel.js";
 import fs from "fs";
+import dotenv from "dotenv";
+import categoryModel from "../models/categoryModel.js";
+import braintree from "braintree";
+import orderModel from "../models/orderModel.js";
 
+//dotenv configuration
+dotenv.config();
+
+// //braintree payment gateway:
+var gateway = new braintree.BraintreeGateway({
+  environment: braintree.Environment.Sandbox,
+  merchantId: process.env.BRAINTREE_MERCHANT_ID,
+  publicKey: process.env.BRAINTREE_PUBLIC_KEY,
+  privateKey: process.env.BRAINTREE_PRIVATE_KEY,
+});
+
+//createProductController:
 export const createProductController = async (req, res) => {
   try {
     const { name, slug, description, price, quantity, category, shipping } =
@@ -263,5 +279,139 @@ export const productListController = async (req, res) => {
       message: "Error in  product list per page controller",
       error: error.message,
     });
+  }
+};
+
+//serchProductController:
+
+export const serchProductController = async (req, res) => {
+  try {
+    const { keyword } = req.params;
+    const result = await productModel
+      .find({
+        $or: [
+          { name: { $regex: keyword, $options: "i" } },
+          { description: { $regex: keyword, $options: "i" } },
+        ],
+      })
+      .select("-photo");
+
+    res.status(200).send({
+      success: true,
+      result,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      success: false,
+      message: "Error in  serch Product Controller",
+      error: error.message,
+    });
+  }
+};
+
+//similar Product Cotroller:
+
+export const similarProductCotroller = async (req, res) => {
+  try {
+    const { pid, cid } = req.params;
+    const products = await productModel
+      .find({
+        category: cid,
+        _id: { $ne: pid },
+      })
+      .select("-photo")
+      .limit(4)
+      .populate("category");
+
+    res.status(200).send({
+      success: true,
+      products,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      success: false,
+      message: "Error in  similar Product Controller",
+      error: error.message,
+    });
+  }
+};
+
+//get product by category  id:
+
+export const productCategoryController = async (req, res) => {
+  try {
+    const { cid } = req.params;
+    const category = await categoryModel.findOne({ _id: cid });
+    const products = await productModel
+      .find({ category })
+      .populate("category")
+      .select("-photo");
+
+    res.status(200).send({
+      success: true,
+      products,
+      category,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      success: false,
+      message: "Error in  Product by category Controller",
+      error: error.message,
+    });
+  }
+};
+
+//braintreeTokenController:
+
+export const braintreeTokenController = async (req, res) => {
+  try {
+    gateway.clientToken.generate({}, function (err, response) {
+      if (err) {
+        res.status(500).send(err);
+      } else {
+        res.send(response);
+      }
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+//braintreePaymentController:
+
+export const braintreePaymentController = async (req, res) => {
+  try {
+    const { nonce, cart } = req.body;
+    let total = 0;
+    cart.map((i) => {
+      total += i.price;
+    });
+
+    let newTransection = gateway.transaction.sale(
+      {
+        amount: total,
+        paymentMethodNonce: nonce,
+        options: {
+          submitForSettlement: true,
+        },
+      },
+      function (err, result) {
+        if (result) {
+          const order = new orderModel({
+            products: cart,
+            payment: result,
+            buyer: req.user._id,
+          }).save();
+          res.json({ ok: true });
+        } else {
+          res.status(500).send(err);
+        }
+      }
+    );
+  } catch (error) {
+    console.log(error);
   }
 };

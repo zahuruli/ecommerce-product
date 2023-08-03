@@ -2,9 +2,14 @@ import React from "react";
 import { NavLink, Link } from "react-router-dom";
 import { useAuth } from "../../context/auth";
 import toast from "react-hot-toast";
-
+import SearchInput from "../Form/SearchInput";
+import useCategory from "../../hooks/usecategory";
+import { useCart } from "../../context/cart";
+import { Badge } from "antd";
 const Header = () => {
+  const categories = useCategory();
   const [auth, setAuth] = useAuth();
+  const [cart] = useCart();
 
   const handleLogOut = () => {
     setAuth({
@@ -31,20 +36,45 @@ const Header = () => {
             <span className="navbar-toggler-icon" />
           </button>
           <div className="collapse navbar-collapse" id="navbarTogglerDemo01">
-            <Link className="navbar-brand" href="#">
+            <Link className="navbar-brand" to={"/"}>
               ecommerce app
             </Link>
             <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
+              <li className="nav-item">
+                <SearchInput />
+              </li>
               <li className="nav-item">
                 <NavLink className="nav-link " to={"/"}>
                   Home
                 </NavLink>
               </li>
-              <li className="nav-item">
-                <NavLink className="nav-link " to={"/category"}>
+              <li className="nav-item dropdown">
+                <Link
+                  className="nav-link dropdown-toggle"
+                  to={"/categories"}
+                  data-bs-toggle="dropdown"
+                >
                   Category
-                </NavLink>
+                </Link>
+                <ul className="dropdown-menu">
+                  <li>
+                    {" "}
+                    <Link to={`/categories`} className="dropdown-item">
+                      All Categories
+                    </Link>{" "}
+                  </li>
+
+                  {categories?.map((c) => (
+                    <li key={c._id}>
+                      {" "}
+                      <Link to={`/category/${c._id}`} className="dropdown-item">
+                        {c.name}
+                      </Link>{" "}
+                    </li>
+                  ))}
+                </ul>
               </li>
+
               {!auth.user ? (
                 <>
                   {" "}
@@ -97,9 +127,11 @@ const Header = () => {
                 </>
               )}
               <li className="nav-item">
-                <NavLink className="nav-link " to={"/cart"}>
-                  Cart(0)
-                </NavLink>
+                <Badge count={cart.length} showZero>
+                  <NavLink className="nav-link " to={"/cart"}>
+                    Cart
+                  </NavLink>
+                </Badge>
               </li>
             </ul>
           </div>
